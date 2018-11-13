@@ -9,3 +9,6 @@
 <p>
     wind direction: {{ $weatherData->wind->deg }} degrees
 </p>
+<p>
+    wind side: {{ $weatherData->wind->degHuman }}
+</p>

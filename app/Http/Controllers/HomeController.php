@@ -19,6 +19,15 @@ class HomeController extends Controller
         $weatherData = $this->weatherService->getCurrent();
 
 //        dd($weatherData);
+//        $windSide = $weatherData->wind->deg = $this->weatherService->getDirectionByDegrees($weatherData->wind->deg);
+//        $windSide = $this->weatherService->getDirectionByDegrees($weatherData->wind->deg);
+
+//        $windSide = array_get((array)$weatherData->wind, 'deg');
+        $weatherData->wind->deg = array_get((array)$weatherData->wind, 'deg');
+        $weatherData->wind->degHuman = $this->weatherService->getDirectionByDegrees(
+            array_get((array)$weatherData->wind, 'deg')
+        );
+
 
         return view('home', compact('weatherData'));
     }
