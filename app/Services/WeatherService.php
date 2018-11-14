@@ -11,14 +11,42 @@ declare(strict_types=1);
 namespace App\Services;
 
 
+use App\Events\WindChanged;
+use App\Parameter;
 use GuzzleHttp\Client;
 
+/**
+ * Class WeatherService
+ * @package App\Services
+ */
 class WeatherService
 {
+    const WIND_CHANGED_POINT = 10;
+    /**
+     * @var mixed
+     */
     private $apiUrl;
+    /**
+     * @var mixed
+     */
     private $apiAppId;
+    /**
+     * @var mixed
+     */
     private $town;
+    /**
+     * @var Client
+     */
     private $client;
+
+
+    /**
+     * @var ParameterService
+     */
+    private $parameterService;
+    /**
+     * @var array
+     */
     private $directions = [
         [
             'from' => 0,
@@ -70,14 +98,26 @@ class WeatherService
     /*
      * WeatherService Constructor
      */
-    public function __construct(Client $client)
+    /**
+     * WeatherService constructor.
+     * @param Client $client
+     * @param ParameterService $parameterService
+     */
+    public function __construct(
+        Client $client,
+        ParameterService $parameterService
+    )
     {
         $this->apiUrl = env('W_URL');
         $this->apiAppId = env('W_APPID');
         $this->town = env('W_TOWN');
         $this->client = $client;
+        $this->parameterService = $parameterService;
     }
     /*
+     * @return \stdClass
+     */
+    /**
      * @return \stdClass
      */
     public function getCurrent(): \stdClass
@@ -97,6 +137,10 @@ class WeatherService
         return json_decode($result->getBody()->getContents());
     }
 
+    /**
+     * @param int|null $deg
+     * @return string
+     */
     public function getDirectionByDegrees(int $deg = null): string
     {
         if(!$deg)
@@ -114,5 +158,32 @@ class WeatherService
         }
 
         return '-';
+    }
+
+
+//    #todo: do all logic here
+
+    /**
+     * @param float $speed
+     */
+    public function checkWindForEmail(float $speed)
+    {
+        $oldSpeed = $this->parameterService->getValue(Parameter::PARAMETER_WIND_SPEED);
+
+        if(!$oldSpeed) {
+            if($oldSpeed > self::WIND_CHANGED_POINT && $speed < self::WIND_CHANGED_POINT)
+            {
+                #todo EVENT WIND DOWN
+                event(new WindChanged());
+            }
+            if($oldSpeed < self::WIND_CHANGED_POINT && $speed > self::WIND_CHANGED_POINT)
+            {
+                #todo EVENT WIND UP
+                event(new WindChanged(up));
+            }
+        }
+
+        $this->parameterService->setValue(Parameter::PARAMETER_WIND_SPEED, $speed);
+
     }
 }

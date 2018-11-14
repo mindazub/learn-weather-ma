@@ -1,4 +1,4 @@
-<h1>Hello From Home</h1>
+<h1>Hello From {{ env('W_TOWN') }}</h1>
 
 <p>
     temp: {{ $weatherData->main->temp }} Celsius
